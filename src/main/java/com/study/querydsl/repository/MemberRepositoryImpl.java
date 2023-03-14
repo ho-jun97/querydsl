@@ -11,6 +11,7 @@ import com.study.querydsl.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 
@@ -21,6 +22,7 @@ import static com.study.querydsl.entity.QMember.member;
 import static com.study.querydsl.entity.QTeam.team;
 
 public class MemberRepositoryImpl implements MemberRepositoryCustom{
+
 
     private final JPAQueryFactory queryFactory;
 
