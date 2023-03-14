@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -673,5 +674,58 @@ public class QuerydslBasicTest {
 
     private BooleanExpression allEq(String usernameCond, Integer ageCond){
         return usernameEq(usernameCond).and(ageEq(ageCond));
+    }
+
+    /**
+     * DB 컨텍스트를 무시하고 db를 바꾼다.
+     * 해결방안 벌크 연산 후 영속성 컨텍스트를 초기화 시켜준다.
+     */
+    @Test
+    public void bulkUpdate(){
+
+        //member1 = 10 -> member1
+        //member2 = 20 -> member2
+        //member3 = 30 -> member3
+        //member4 = 40 -> member4
+
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        em.flush();
+        em.clear();
+
+        //1 member1 = 10 -> 1 DB 비회원
+        //2 member2 = 20 -> 2 DB 비회원
+        //3 member3 = 30 -> 3 DB member3
+        //4 member4 = 40 -> 4 DB member3
+
+
+        // DB 보다 영속성 컨텍스트가 우선순위가 높음
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        for (Member member1 : result) {
+            System.out.println("member1 = " + member1);
+        }
+    }
+
+    @Test
+    public void bulkAdd(){
+        long execute = queryFactory
+                .update(member)
+                .set(member.age, member.age.multiply(2))
+                .execute();
+    }
+
+    @Test
+    public void bulkDelete(){
+        long execute = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
     }
 }
