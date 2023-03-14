@@ -44,7 +44,11 @@ public class QuerydslBasicTest {
     EntityManager em;
 
     JPAQueryFactory queryFactory;
-    @BeforeEach // test 들어가기 전 미리 셋팅
+
+    /**
+     * Test 들어가기전 데이터 Setting
+     */
+    @BeforeEach
     public void before(){
         queryFactory = new JPAQueryFactory(em);
         Team teamA = new Team("teamA");
@@ -727,5 +731,34 @@ public class QuerydslBasicTest {
                 .delete(member)
                 .where(member.age.gt(18))
                 .execute();
+    }
+
+    @Test
+    public void sqlFunction(){
+        List<String> result = queryFactory
+                .select(Expressions.stringTemplate(
+                        "function('replace', {0}, {1], {2})",
+                        member.username, "member", "M"))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void sqlFunction2(){
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(
+//                        Expressions.stringTemplate("function('lower',{0})", member.username)))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("s = " + s);
+        }
     }
 }
